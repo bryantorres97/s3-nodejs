@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, PutObjectCommandInput, ListObjectsCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 import { S3_ACCESS_KEY, S3_BUCKET, S3_BUCKET_REGION, S3_SECRET_KEY } from './config';
 import fileUpload from 'express-fileupload';
@@ -14,10 +15,13 @@ const client = new S3Client({
 
 export const uploadFile = async (file: fileUpload.UploadedFile) => {
 	const stream = fs.createReadStream(file.tempFilePath);
+	const fileExtension = file.name.split('.').pop();
+	const fileName = uuidv4().concat(`.${fileExtension}`);
 	const uploadParams: PutObjectCommandInput = {
 		Bucket: S3_BUCKET,
-		Key: file.name,
+		Key: fileName,
 		Body: stream,
+		ContentType: file.mimetype,
 	};
 
 	const command = new PutObjectCommand(uploadParams);
