@@ -1,0 +1,7 @@
+dist/
+downloads/
+tmp/
+
+node_modules/
+
+.env
