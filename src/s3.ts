@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, PutObjectCommandInput, ListObjectsCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,6 +14,11 @@ const client = new S3Client({
 	},
 });
 
+/**
+ * Carga un archivo en un depósito de S3 mediante AWS SDK para JavaScript.
+ * @param file - Representa el archivo cargado y contiene información de este.
+ * @returns Se está devolviendo la respuesta de la operación de carga de S3.
+ */
 export const uploadFile = async (file: fileUpload.UploadedFile) => {
 	const stream = fs.createReadStream(file.tempFilePath);
 	const fileExtension = file.name.split('.').pop();
@@ -47,6 +53,16 @@ export const getFile = async (key: string) => {
 	const command = new GetObjectCommand(params);
 	const response = await client.send(command);
 	return response;
+};
+
+export const getFileUrl = async (key: string) => {
+	const params = {
+		Bucket: S3_BUCKET,
+		Key: key,
+	};
+	const command = new GetObjectCommand(params);
+	const url = await getSignedUrl(client, command, { expiresIn: 3600 });
+	return url;
 };
 
 export const downloadFile = async (key: string) => {

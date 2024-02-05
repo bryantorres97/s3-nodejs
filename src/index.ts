@@ -3,7 +3,7 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 
 import { PORT } from './config';
-import { downloadFile, getFile, getFiles, uploadFile } from './s3';
+import { downloadFile, getFile, getFileUrl, getFiles, uploadFile } from './s3';
 
 const app = express();
 app.use(cors());
@@ -15,6 +15,7 @@ app.use(
 		tempFileDir: './tmp/',
 	})
 );
+app.use(express.static('downloads'));
 
 app.get('/', (req, res) => {
 	res.json('Servidor corriendo correctamente');
@@ -27,9 +28,8 @@ app.get('/files', async (req, res) => {
 
 app.get('/files/:key', async (req, res) => {
 	const { key } = req.params;
-	const file = await getFile(key);
-	console.log(file.Body);
-	return res.json(file.$metadata);
+	const file = await getFileUrl(key);
+	return res.json({ file });
 });
 
 app.get('/download/:key', async (req, res) => {
